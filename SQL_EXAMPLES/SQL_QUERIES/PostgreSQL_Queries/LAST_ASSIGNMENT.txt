@@ -1,24 +1,12 @@
-SELECT * FROM students;
-SELECT * FROM student_enrollment;
-SELECT * FROM courses;
-SELECT * FROM professors;
-SELECT * FROM teach;
+--PROBLEM SOLVED: Write a query that finds students who do not take CS180.
+SELECT * FROM students
+WHERE student_no NOT IN (
+  SELECT student_no
+  FROM student_enrollment
+  WHERE course_no = 'CS180
+  );
 
-SELECT student_no
-FROM (SELECT students.student_no, student_name, course_no
-FROM students INNER JOIN student_enrollment
-ON students.student_no = student_enrollment.student_no
-WHERE course_no != 'CS180') a
-GROUP BY student_no;
-
-SELECT *
-FROM students
-WHERE student_no IN (SELECT s.student_no
-					 FROM student_enrollment se RIGHT JOIN students s
-					 ON se.student_no = s.student_no
-					 WHERE s.student_no NOT IN (SELECT student_no FROM student_enrollment WHERE course_no = 'CS180')
-					 OR s.student_no NOT IN (SELECT student_no FROM student_enrollment));
---second problem
+--PROBLEM SOLVED: Write a query to find students who take CS110 or CS107 but not both.
 SELECT students.student_no, student_name, course_no
 FROM students INNER JOIN student_enrollment
 ON students.student_no = student_enrollment.student_no
@@ -28,7 +16,8 @@ AND students.student_no NOT IN (SELECT a.student_no
 								INNER JOIN (SELECT student_no, course_no FROM student_enrollment WHERE course_no = 'CS107') b
 								ON a.student_no = b.student_no)
 ORDER BY student_no;
---problem 3
+
+--PROBLEM SOLVED: Write a query to find students who take CS220 and no other courses.
 SELECT student_name, course_no
 FROM
 (SELECT student_name, course_no,
@@ -37,7 +26,9 @@ FROM students INNER JOIN student_enrollment
 ON students.student_no = student_enrollment.student_no) a
 WHERE course_count = 1
 AND course_no = 'CS220';
---problem 4
+
+--PROBLEM SOLVED: Write a query that finds those students who take at most 2 courses. Your query should exclude students 
+--that don't take any courses as well as those that take more than 2 courses.
 SELECT student_name, age, student_no
 FROM
 (SELECT student_name, course_no, age, students.student_no,
@@ -48,60 +39,9 @@ WHERE course_count <= 2
 AND course_count IS NOT NULL
 GROUP BY student_no, student_name, age;
 
---Last PRoblem
-/*SELECT age
-FROM (SELECT age
-FROM (SELECT MAX(age) OVER(ORDER BY age ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) next_older_age, age, student_name FROM students) a
-GROUP BY age) unique_ages;
-
-
-SELECT student_name, age,
-RANK() OVER(ORDER BY age DESC)
-FROM students;
-
-SELECT student_no, student_name, age, RANK() OVER (ORDER BY age DESC) age_rank, COUNT(age) OVER (PARTITION BY age ORDER BY age DESC)
-FROM (SELECT age, student_name, student_no FROM students ORDER BY age DESC) a
-ORDER BY student_no;
-
-SELECT age 
-FROM students s1 
-WHERE s1.age > ALL (SELECT age FROM students s2 WHERE age = 17)
-ORDER BY age DESC;
-
-SELECT age
-FROM students s2
-WHERE s2.age > ALL (SELECT age FROM students s2 WHERE age = 18)
-ORDER BY age DESC;
-
-SELECT age
-FROM students
-WHERE age NOT IN (SELECT age
-FROM students s2
-WHERE s2.age > ALL (SELECT age FROM students s3 WHERE age = 19)
-ORDER BY age DESC)
-AND age NOT IN (SELECT age FROM students ORDER BY age LIMIT 2);
-
-SELECT age 
-FROM students
-ORDER BY age 
-LIMIT (SELECT SUM(age_count)
-	  FROM (SELECT Count(age) OVER(PARTITION BY age ORDER BY age) age_count FROM students LIMIT 3) a);
-*/	  
---Two solutions for last problem
-SELECT age, student_name
-FROM students
-WHERE age NOT IN (SELECT age
-				  FROM students s2
-				  WHERE s2.age > ALL (SELECT age 
-									  FROM students
-									  ORDER BY age 
-									  LIMIT (SELECT SUM(age_count)
-	  								  FROM (SELECT Count(age) OVER(PARTITION BY age ORDER BY age) age_count FROM students LIMIT 3) a))
-				  ORDER BY age DESC);
-				  
+--PROBLEM SOLVED: Write a query to find students who are older than at most two other students.
 SELECT s1.*
 FROM students s1
 WHERE 2 >= (SELECT count(*)
         FROM students s2 
-        WHERE s2.age < s1.age);
-		
+        WHERE s2.age < s1.age)
