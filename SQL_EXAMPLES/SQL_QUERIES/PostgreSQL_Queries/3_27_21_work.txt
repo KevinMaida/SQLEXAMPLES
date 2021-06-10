@@ -1,0 +1,158 @@
+SELECT * FROM departments;
+SELECT * FROM employees;
+
+SELECT *
+FROM employees
+WHERE department IN (SELECT department FROM departments WHERE division = 'Kids')
+AND hire_date > ALL (SELECT hire_date FROM employees WHERE department = 'Maintenance');
+
+SELECT salary, Count(salary)
+FROM employees
+GROUP BY salary
+HAVING Count(salary) > ANY (SELECT Count(salary) FROM employees GROUP BY salary)
+AND salary >= ALL (SELECT salary FROM employees GROUP by salary HAVING Count(salary) > ANY (SELECT Count(salary) FROM employees GROUP BY salary));
+
+SELECT MAX(id), name
+FROM dupes
+GROUP BY name;
+
+drop table dupes;
+
+SELECT round(AVG(salary))
+FROM employees
+WHERE salary NOT IN (SELECT MAX(salary) FROM employees)
+AND salary NOT IN (SELECT MIN(salary) FROM employees);
+
+SELECT * FROM students;
+
+SELECT student_name, student_no
+FROM students
+WHERE student_no IN (SELECT student_no 
+					 FROM student_enrollment 
+					 WHERE course_no IN (SELECT 
+										course_no
+										FROM courses
+										WHERE course_title IN ('Physics', 'US History')));
+										
+
+SELECT student_name
+FROM students
+WHERE student_no IN (SELECT student_no FROM student_enrollment GROUP BY student_no ORDER BY count(*) DESC LIMIT 1);
+																				  
+Subqueries can be used in the FROM clause and the WHERE clause but cannot be used in the SELECT Clause.
+FALSE
+
+SELECT student_name, age
+FROM students
+WHERE age IN (SELECT MAX(age) FROM students);
+
+
+SELECT a.category, Count(a.*)
+FROM (SELECT first_name, salary, CASE
+	 WHEN salary < 100000 THEN 'UNDER PAID'
+	 WHEN salary > 100000 AND salary < 160000 THEN 'PAID WELL'
+	 WHEN salary > 160000 THEN 'EXECUTIVE'
+	 ELSE 'UNPAID'
+	 END as category
+	 FROM employees
+	 ORDER BY salary DESC) a
+GROUP BY a.category;
+
+SELECT a.category, Count(a.*)
+FROM (SELECT first_name, salary, CASE
+	 WHEN salary < 100000 THEN 'UNDER PAID'
+	 WHEN salary > 100000 AND salary < 160000 THEN 'PAID WELL'
+	 WHEN salary > 160000 THEN 'EXECUTIVE'
+	 ELSE 'UNPAID'
+	 END as category
+	 FROM employees
+	 ORDER BY salary DESC) a
+GROUP BY a.category;
+
+
+SELECT SUM(CASE WHEN department = 'Sports' THEN 1 END) sports_employees, SUM(CASE WHEN department = 'Tools' THEN 1 END) tools_employees,
+		SUM(CASE WHEN department = 'Clothing' THEN 1 END) clothing_employees,
+		SUM(CASE WHEN department = 'Computers' THEN 1 END) computers_employees
+FROM employees;
+
+SELECT * FROM regions;
+
+SELECT first_name, (CASE WHEN region_id = 1 THEN (SELECT country FROM regions WHERE region_id = 1) END) region_1,
+					(CASE WHEN region_id = 2 THEN (SELECT country FROM regions WHERE region_id = 2) END) region_2,
+					(CASE WHEN region_id = 3 THEN (SELECT country FROM regions WHERE region_id = 3) END) region_3,
+					(CASE WHEN region_id = 4 THEN (SELECT country FROM regions WHERE region_id = 4) END) region_4,
+					(CASE WHEN region_id = 5 THEN (SELECT country FROM regions WHERE region_id = 5) END) region_5,
+					(CASE WHEN region_id = 6 THEN (SELECT country FROM regions WHERE region_id = 6) END) region_6,
+					(CASE WHEN region_id = 7 THEN (SELECT country FROM regions WHERE region_id = 7) END) region_7
+FROM employees;
+
+SELECT SUM(CASE WHEN a.region_1 = 'United States' THEN 1 ELSE 0 END) +
+		SUM(CASE WHEN a.region_2 = 'United States' THEN 1 ELSE 0  END) +
+		SUM(CASE WHEN a.region_3 = 'United States' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_4 = 'United States' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_5 = 'United States' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_6 = 'United States' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_7 = 'United States' THEN 1 ELSE 0  END) united_states,
+		SUM(CASE WHEN a.region_1 = 'Asia' THEN 1 ELSE 0 END) +
+		SUM(CASE WHEN a.region_2 = 'Asia' THEN 1 ELSE 0  END) +
+		SUM(CASE WHEN a.region_3 = 'Asia' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_4 = 'Asia' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_5 = 'Asia' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_6 = 'Asia' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_7 = 'Asia' THEN 1 ELSE 0  END) asia,
+		SUM(CASE WHEN a.region_1 = 'Canada' THEN 1 ELSE 0 END) +
+		SUM(CASE WHEN a.region_2 = 'Canada' THEN 1 ELSE 0  END) +
+		SUM(CASE WHEN a.region_3 = 'Canada' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_4 = 'Canada' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_5 = 'Canada' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_6 = 'Canada' THEN 1 ELSE 0  END) + 
+		SUM(CASE WHEN a.region_7 = 'Canada' THEN 1 ELSE 0  END) canada
+FROM
+(SELECT first_name, (CASE WHEN region_id = 1 THEN (SELECT country FROM regions WHERE region_id = 1) END) region_1,
+					(CASE WHEN region_id = 2 THEN (SELECT country FROM regions WHERE region_id = 2) END) region_2,
+					(CASE WHEN region_id = 3 THEN (SELECT country FROM regions WHERE region_id = 3) END) region_3,
+					(CASE WHEN region_id = 4 THEN (SELECT country FROM regions WHERE region_id = 4) END) region_4,
+					(CASE WHEN region_id = 5 THEN (SELECT country FROM regions WHERE region_id = 5) END) region_5,
+					(CASE WHEN region_id = 6 THEN (SELECT country FROM regions WHERE region_id = 6) END) region_6,
+					(CASE WHEN region_id = 7 THEN (SELECT country FROM regions WHERE region_id = 7) END) region_7
+FROM employees) a;
+
+SELECT * FROM fruit_imports;
+
+SELECT name
+FROM fruit_imports
+GROUP BY name;
+
+SELECT name, SUM(supply), (CASE WHEN SUM(supply) < 20000 THEN 'LOW'
+						  	WHEN SUM(supply) > 20000 AND SUM(supply) < 50000 THEN 'ENOUGH'
+						  	WHEN SUM(supply) > 50000 THEN 'FULL' END) category
+FROM fruit_imports
+GROUP BY name;
+
+SELECT season, SUM(supply * cost_per_unit) as total_cost_per_season
+FROM fruit_imports
+GROUP BY season;
+
+SELECT (SELECT SUM(supply * cost_per_unit) as total_cost_per_season
+		FROM fruit_imports
+	  	WHERE season = 'Winter'
+		GROUP BY season) Winter,
+		(SELECT SUM(supply * cost_per_unit) as total_cost_per_season
+		FROM fruit_imports
+	  	WHERE season = 'Summer'
+		GROUP BY season) Summer,
+		(SELECT SUM(supply * cost_per_unit) as total_cost_per_season
+		FROM fruit_imports
+	  	WHERE season = 'All Year'
+		GROUP BY season) All_Year,
+		(SELECT SUM(supply * cost_per_unit) as total_cost_per_season
+		FROM fruit_imports
+	  	WHERE season = 'Spring'
+		GROUP BY season) Spring,
+		(SELECT SUM(supply * cost_per_unit) as total_cost_per_season
+		FROM fruit_imports
+	  	WHERE season = 'Fall'
+		GROUP BY season) Fall
+FROM fruit_imports
+LIMIT 1;
+		

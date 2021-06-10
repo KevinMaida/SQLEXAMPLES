@@ -1,0 +1,24 @@
+SELECT department, (SELECT MAX(salary) FROM employees e1 WHERE e1.department = d.department)
+FROM departments d
+WHERE (SELECT Count(*) FROM employees e2 WHERE d.department = e2.department) > 38;
+
+SELECT department, first_name, salary, (CASE WHEN 
+									   salary = (SELECT max_salary 
+												 FROM (SELECT MAX(salary) as max_salary, department 
+													   FROM employees GROUP BY department) e2 
+												 WHERE e1.department = e2.department)
+											THEN 'HIGHEST SALARY'
+											WHEN
+											salary = (SELECT min_salary FROM (SELECT MIN(salary) as min_salary, department 
+																			  FROM employees GROUP BY department) e3 
+													  WHERE e1.department = e3.department)
+											THEN 'LOWEST SALARY' END)
+FROM employees e1
+WHERE salary = (SELECT max_salary FROM (SELECT MAX(salary) as max_salary, department 
+										FROM employees GROUP BY department) e2 
+				WHERE e1.department = e2.department)
+OR salary = (SELECT min_salary FROM (SELECT MIN(salary) as min_salary, department 
+									 FROM employees GROUP BY department) e3 
+			 WHERE e1.department = e3.department)
+GROUP BY department, salary, first_name
+ORDER BY department, salary DESC, first_name;
